@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+
+    - name: Test chat-server
+      working-directory: ./chat-server
+      run: |
+        go mod download
+        go test ./...
+
+    - name: Test operator
+      working-directory: ./operator
+      run: |
+        go mod download
+        go test ./...
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Test moderation-service
+      working-directory: ./moderation-service
+      run: |
+        pip install -r requirements.txt
+        python -m pytest
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Test frontend
+      working-directory: ./frontend
+      run: |
+        npm install
+        npm test

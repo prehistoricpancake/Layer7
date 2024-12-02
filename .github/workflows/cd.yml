@@ -1,0 +1,51 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push chat-server
+      uses: docker/build-push-action@v5
+      with:
+        context: ./chat-server
+        push: true
+        tags: ghcr.io/${{ github.repository }}/chat-server:${{ github.sha }}
+
+    - name: Build and push frontend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: true
+        tags: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+
+    - name: Build and push moderation-service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./moderation-service
+        push: true
+        tags: ghcr.io/${{ github.repository }}/moderation-service:${{ github.sha }}
+
+    - name: Build and push operator
+      uses: docker/build-push-action@v5
+      with:
+        context: ./operator
+        push: true
+        tags: ghcr.io/${{ github.repository }}/operator:${{ github.sha }}

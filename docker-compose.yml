@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  chat-server:
+    build: ./chat-server
+    ports:
+      - "8080:8080"
+    depends_on:
+      - moderation-service
+    environment:
+      - MODERATION_SERVICE_URL=http://moderation-service:5001
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - chat-server
+
+  moderation-service:
+    build: ./moderation-service
+    ports:
+      - "5001:5000"
+
+  operator:
+    build: ./operator
+    depends_on:
+      - chat-server
+      - moderation-service
